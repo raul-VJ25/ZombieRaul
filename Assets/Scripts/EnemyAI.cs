@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
 
@@ -13,6 +14,9 @@ public class EnemyAI : MonoBehaviour
 
     [SerializeField] private float attackRange = 2f;
     [SerializeField] private float idleToPatrolTime = 3f;
+
+    private Transform crumb;
+    [SerializeField] private LayerMask breadcrumbMask;
 
     private Transform player;
     private NavMeshAgent agent;
@@ -65,7 +69,9 @@ public class EnemyAI : MonoBehaviour
 
         attackRange = player.GetComponent<NavMeshAgent>().radius + agent.radius + 0.5f;
 
-        losMask = ~LayerMask.GetMask("Player", "Enemy");
+        losMask = ~LayerMask.GetMask("Player", "Enemy", "Breadcrumb");
+
+        breadcrumbMask = LayerMask.GetMask("Breadcrumb");
 
         currentState = EnemyState.Idle;
         Idle();
@@ -107,9 +113,20 @@ public class EnemyAI : MonoBehaviour
 
     void Update()
     {
+
         distanceToPlayer = Vector3.Distance(transform.position, player.position);
 
+        if (distanceToPlayer > chaseRange)
+        {
+            crumb = GetBreadcrumb();
+        }
+
         if (distanceToPlayer <= chaseRange && CheckLineOfSight(player))
+        {
+            currentState = EnemyState.Chase;
+            crumb = null;
+        }
+        else if (crumb != null)
         {
             currentState = EnemyState.Chase;
         }
@@ -133,7 +150,44 @@ public class EnemyAI : MonoBehaviour
                 Attack();
                 break;
         }
-        Debug.Log("Estado del enemigo: " + currentState);
+    }
+
+    private Transform GetBreadcrumb()
+    {
+        Collider[] crumbsInRange = Physics.OverlapSphere(
+            transform.position,
+            chaseRange,
+            breadcrumbMask
+        );
+
+        if (crumbsInRange.Length == 0)
+        {
+            return null;
+        }
+
+        List<Transform> crumbsList = new List<Transform>();
+
+        foreach (Collider crumb in crumbsInRange)
+        {
+            if (CheckLineOfSight(crumb.transform))
+            {
+                crumbsList.Add(crumb.transform);
+            }
+        }
+
+        if (crumbsList.Count == 0)
+        {
+            return null;
+        }
+
+        crumbsList.Sort((a, b) =>
+        {
+            float lifespanA = a.GetComponent<Breadcrumb>().GetLifespan();
+            float lifespanB = b.GetComponent<Breadcrumb>().GetLifespan();
+            return lifespanB.CompareTo(lifespanA);
+        });
+
+        return crumbsList[0];
     }
 
     private void Idle()
@@ -195,9 +249,8 @@ public class EnemyAI : MonoBehaviour
     {
         idleCounter = idleTimeOut;
 
-        if (CheckLineOfSight(player))
+        if (distanceToPlayer <= chaseRange && CheckLineOfSight(player))
         {
-
             float timeSinceLastCalc = Time.time - lastDestinationCalculation;
             float distanceMovedByPlayer = Vector3.Distance(player.position, lastPlayerPosition);
 
@@ -208,6 +261,21 @@ public class EnemyAI : MonoBehaviour
 
                 lastPlayerPosition = player.position;
                 lastDestinationCalculation = Time.time;
+            }
+        }
+        else if (crumb != null)
+        {
+            if (agent.destination != crumb.position)
+            {
+                agent.stoppingDistance = 0f;
+                agent.SetDestination(crumb.position);
+            }
+
+            float distanceToCrumb = Vector3.Distance(transform.position, crumb.position);
+            if (distanceToCrumb <= 0.5f)
+            {
+                Destroy(crumb.gameObject);
+                crumb = null;
             }
         }
     }

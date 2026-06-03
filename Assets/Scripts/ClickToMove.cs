@@ -1,19 +1,41 @@
-﻿// ClickToMove.cs
-using UnityEngine;
+﻿using UnityEngine;
+using UnityEngine.AI;
 
-[RequireComponent (typeof (UnityEngine.AI.NavMeshAgent))]
-public class ClickToMove : MonoBehaviour {
-	RaycastHit hitInfo = new RaycastHit();
-	UnityEngine.AI.NavMeshAgent agent;
+[RequireComponent(typeof(NavMeshAgent))]
+public class ClickToMove : MonoBehaviour
+{
+    [SerializeField] private GameObject clickTarget;
 
-	void Start () {
-		agent = GetComponent<UnityEngine.AI.NavMeshAgent> ();
-	}
-	void Update () {
-		if(Input.GetMouseButtonDown(0)) {
-			Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-			if (Physics.Raycast(ray.origin, ray.direction, out hitInfo))
-				agent.destination = hitInfo.point;
-		}
-	}
+    private RaycastHit hit = new RaycastHit();
+    private NavMeshAgent agent;
+    private Transform tempContainer;
+    private Camera cam;
+
+    private void Awake()
+    {
+        agent = GetComponent<NavMeshAgent>();
+        cam = Camera.main;
+        tempContainer = GameObject.Find("TempContainer").transform;
+    }
+
+    private void Update()
+    {
+        if (Input.GetMouseButtonDown(0))
+        {
+            Ray ray = cam.ScreenPointToRay(Input.mousePosition);
+
+            if (Physics.Raycast(ray, out hit))
+            {
+                GameObject goClick = Instantiate(
+                    clickTarget,
+                    hit.point,
+                    Quaternion.identity,
+                    tempContainer
+                );
+
+                goClick.name = "Click Target";
+                agent.SetDestination(hit.point);
+            }
+        }
+    }
 }

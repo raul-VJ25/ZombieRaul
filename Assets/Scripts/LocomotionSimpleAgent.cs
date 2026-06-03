@@ -1,62 +1,52 @@
 ﻿using UnityEngine;
+using UnityEngine.AI;
 
-[RequireComponent (typeof (UnityEngine.AI.NavMeshAgent))]
-[RequireComponent (typeof (Animator))]
-public class LocomotionSimpleAgent : MonoBehaviour {
-	Animator anim;
-	UnityEngine.AI.NavMeshAgent agent;
-	Vector2 smoothDeltaPosition = Vector2.zero;
-	Vector2 velocity = Vector2.zero;
+[RequireComponent(typeof(NavMeshAgent))]
+[RequireComponent(typeof(Animator))]
+public class LocomotionSimpleAgent : MonoBehaviour
+{
+    Animator anim;
+    NavMeshAgent agent;
+    LookAt lookAt;
+    Vector2 smoothDeltaPosition = Vector2.zero;
+    Vector2 velocity = Vector2.zero;
 
-	void Start () {
-		anim = GetComponent<Animator> ();
-		agent = GetComponent<UnityEngine.AI.NavMeshAgent> ();
-		agent.updatePosition = false;
-	}
-	
-	void Update () {
-		Vector3 worldDeltaPosition = agent.nextPosition - transform.position;
+    void Awake()
+    {
+        anim = GetComponent<Animator>();
+        agent = GetComponent<NavMeshAgent>();
+        lookAt = GetComponent<LookAt>();
+        agent.updatePosition = false;
+    }
 
-		// Map 'worldDeltaPosition' to local space
-		float dx = Vector3.Dot (transform.right, worldDeltaPosition);
-		float dy = Vector3.Dot (transform.forward, worldDeltaPosition);
-		Vector2 deltaPosition = new Vector2 (dx, dy);
+    void Update()
+    {
+        Vector3 worldDeltaPosition = agent.nextPosition - transform.position;
 
-		// Low-pass filter the deltaMove
-		float smooth = Mathf.Min(1.0f, Time.deltaTime/0.15f);
-		smoothDeltaPosition = Vector2.Lerp (smoothDeltaPosition, deltaPosition, smooth);
+        float dx = Vector3.Dot(transform.right, worldDeltaPosition);
+        float dy = Vector3.Dot(transform.forward, worldDeltaPosition);
+        Vector2 deltaPosition = new Vector2(dx, dy);
 
-		// Update velocity if delta time is safe
-		if (Time.deltaTime > 1e-5f)
-			velocity = smoothDeltaPosition / Time.deltaTime;
+        float smooth = Mathf.Min(1.0f, Time.deltaTime / 0.15f);
+        smoothDeltaPosition = Vector2.Lerp(smoothDeltaPosition, deltaPosition, smooth);
 
-		bool shouldMove = velocity.magnitude > 0.5f && agent.remainingDistance > agent.radius;
+        if (Time.deltaTime > 1e-5f)
+            velocity = smoothDeltaPosition / Time.deltaTime;
 
-		// Update animation parameters
-		anim.SetBool("move", shouldMove);
-		anim.SetFloat ("velx", velocity.x);
-		anim.SetFloat ("vely", velocity.y);
+        bool shouldMove = velocity.magnitude > 0.5f && agent.remainingDistance > agent.radius;
 
-		LookAt lookAt = GetComponent<LookAt> ();
-		if (lookAt)
-			lookAt.lookAtTargetPosition = agent.steeringTarget + transform.forward;
+        anim.SetBool("move", shouldMove);
+        anim.SetFloat("velx", velocity.x);
+        anim.SetFloat("vely", velocity.y);
 
-//		// Pull character towards agent
-//		if (worldDeltaPosition.magnitude > agent.radius)
-//			transform.position = agent.nextPosition - 0.9f*worldDeltaPosition;
+        if (lookAt)
+            lookAt.lookAtTargetPosition = agent.steeringTarget + transform.forward;
+    }
 
-//		// Pull agent towards character
-//		if (worldDeltaPosition.magnitude > agent.radius)
-//			agent.nextPosition = transform.position + 0.9f*worldDeltaPosition;
-	}
-
-	void OnAnimatorMove () {
-		// Update postion to agent position
-//		transform.position = agent.nextPosition;
-
-		// Update position based on animation movement using navigation surface height
-		Vector3 position = anim.rootPosition;
-		position.y = agent.nextPosition.y;
-		transform.position = position;
-	}
+    void OnAnimatorMove()
+    {
+        Vector3 position = anim.rootPosition;
+        position.y = agent.nextPosition.y;
+        transform.position = position;
+    }
 }

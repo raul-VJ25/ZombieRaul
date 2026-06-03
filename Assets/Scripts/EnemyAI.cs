@@ -53,4 +53,35 @@ public class EnemyAI : MonoBehaviour
             Debug.LogWarning("Los rangos y tiempos deberían ser mayores que 0.");
         }
     }
+
+    private void Update()
+    {
+        float distanceToPlayer = Vector3.Distance(transform.position, player.position);
+
+        if (distanceToPlayer <= attackRange)
+        {
+            currentState = EnemyState.Attack;
+            idleTimer = 0f;
+        }
+        else if (distanceToPlayer <= chaseRange)
+        {
+            currentState = EnemyState.Chase;
+            idleTimer = 0f;
+        }
+        else
+        {
+            idleTimer += Time.deltaTime;
+
+            if (idleTimer >= idleToPatrolTime)
+            {
+                currentState = EnemyState.Patrol;
+            }
+            else
+            {
+                currentState = EnemyState.Idle;
+            }
+        }
+
+        Debug.Log("Estado del enemigo: " + currentState);
+    }
 }

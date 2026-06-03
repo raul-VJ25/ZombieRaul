@@ -40,7 +40,10 @@ public class EnemyAI : MonoBehaviour
             return;
         }
 
+        attackRange = player.GetComponent<NavMeshAgent>().radius + agent.radius + 0.5f;
+
         currentState = EnemyState.Idle;
+        Idle();
         idleTimer = 0f;
 
         if (attackRange >= chaseRange)
@@ -56,6 +59,9 @@ public class EnemyAI : MonoBehaviour
 
     private void Update()
     {
+
+        currentState = EnemyState.Idle;
+
         float distanceToPlayer = Vector3.Distance(transform.position, player.position);
 
         if (distanceToPlayer <= attackRange)
@@ -76,12 +82,44 @@ public class EnemyAI : MonoBehaviour
             {
                 currentState = EnemyState.Patrol;
             }
-            else
+
+            switch (currentState)
             {
-                currentState = EnemyState.Idle;
+                case EnemyState.Idle:
+                    Idle();
+                    break;
+                case EnemyState.Patrol:
+                    Patrol();
+                    break;
+                case EnemyState.Attack:
+                    Attack();
+                    break;
+                case EnemyState.Chase:
+                    Chase();
+                    break;
             }
-        }
+        } 
 
         Debug.Log("Estado del enemigo: " + currentState);
+    }
+
+    void Idle()
+    {
+       
+    }
+
+    void Patrol()
+    {
+       
+    }
+
+    void Attack()
+    {
+        
+    }
+
+    void Chase()
+    {
+        
     }
 }

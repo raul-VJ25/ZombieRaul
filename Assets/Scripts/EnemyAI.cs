@@ -19,6 +19,14 @@ public class EnemyAI : MonoBehaviour
     private NavMeshAgent agent;
     private Animator anim;
 
+    [SerializeField] private float patrolRadius = 5f;
+    [SerializeField] private Vector2 idleDelay = new Vector2(3f, 8f);
+
+    private Vector3 startPosition;
+    private Vector3 patrolPosition;
+    private float idleTimeOut;
+    private float idleCounter;
+
     private float idleTimer;
     private EnemyState currentState;
 
@@ -26,6 +34,8 @@ public class EnemyAI : MonoBehaviour
     {
         agent = GetComponent<NavMeshAgent>();
         anim = GetComponent<Animator>();
+
+        startPosition = transform.position;
 
         GameObject playerObject = GameObject.FindGameObjectWithTag("Player");
 
@@ -57,69 +67,97 @@ public class EnemyAI : MonoBehaviour
         }
     }
 
-    private void Update()
+    void Update()
     {
-
         currentState = EnemyState.Idle;
 
         float distanceToPlayer = Vector3.Distance(transform.position, player.position);
 
-        if (distanceToPlayer <= attackRange)
+        if (distanceToPlayer <= chaseRange)
         {
-            currentState = EnemyState.Attack;
-            idleTimer = 0f;
-        }
-        else if (distanceToPlayer <= chaseRange)
-        {
+            idleCounter = 0f;
             currentState = EnemyState.Chase;
-            idleTimer = 0f;
         }
         else
         {
-            idleTimer += Time.deltaTime;
 
-            if (idleTimer >= idleToPatrolTime)
-            {
-                currentState = EnemyState.Patrol;
-            }
+        }
 
-            switch (currentState)
-            {
-                case EnemyState.Idle:
-                    Idle();
-                    break;
-                case EnemyState.Patrol:
-                    Patrol();
-                    break;
-                case EnemyState.Attack:
-                    Attack();
-                    break;
-                case EnemyState.Chase:
-                    Chase();
-                    break;
-            }
-        } 
-
+        switch (currentState)
+        {
+            case EnemyState.Idle:
+                Idle();
+                break;
+            case EnemyState.Patrol:
+                Patrol();
+                break;
+            case EnemyState.Chase:
+                Chase();
+                break;
+            case EnemyState.Attack:
+                Attack();
+                break;
+        }
         Debug.Log("Estado del enemigo: " + currentState);
     }
 
-    void Idle()
+    private void Idle()
     {
-       
+
+        idleCounter -= Time.deltaTime;
+
+        if (idleCounter <= 0f)
+        {
+
+            idleCounter = 0f;
+
+            idleTimeOut = Random.Range(idleDelay.x, idleDelay.y);
+            idleCounter = idleTimeOut;
+
+            patrolPosition = startPosition + Random.insideUnitSphere * patrolRadius;
+
+            patrolPosition.y = startPosition.y;
+
+            currentState = EnemyState.Patrol;
+        }
     }
 
-    void Patrol()
+    private void Patrol()
     {
-       
+
+        agent.stoppingDistance = 0f;
+
+        if (agent.destination != patrolPosition)
+        {
+            agent.SetDestination(patrolPosition);
+
+
+            if (agent.pathStatus != NavMeshPathStatus.PathComplete)
+            {
+
+                agent.SetDestination(transform.position);
+                patrolPosition = agent.destination;
+                return;
+            }
+        }
+
+        float remainingDistance = Vector3.Distance(transform.position, patrolPosition);
+
+
+        if (remainingDistance <= 0.1f)
+        {
+            idleCounter = 0f;
+            currentState = EnemyState.Idle;
+        }
     }
 
     void Attack()
     {
-        
+
     }
 
     void Chase()
     {
-        
+
     }
 }

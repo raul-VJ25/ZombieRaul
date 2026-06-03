@@ -51,6 +51,7 @@
   <ItemGroup>
     <Compile Include="Assets\Scripts\LookAt.cs" />
     <Compile Include="Assets\Scripts\ClickToMove.cs" />
+    <Compile Include="Assets\Scripts\ClickTarget.cs" />
     <Compile Include="Assets\Scripts\LocomotionSimpleAgent.cs" />
   </ItemGroup>
   <ItemGroup>

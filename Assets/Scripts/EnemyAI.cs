@@ -11,7 +11,6 @@ public class EnemyAI : MonoBehaviour
         Attack
     }
 
-    [SerializeField] private float chaseRange = 8f;
     [SerializeField] private float attackRange = 2f;
     [SerializeField] private float idleToPatrolTime = 3f;
 
@@ -27,8 +26,22 @@ public class EnemyAI : MonoBehaviour
     private float idleTimeOut;
     private float idleCounter;
 
+    [Header("Chase Settings")]
+    [SerializeField, Range(5f, 25f)]
+    private float chaseRange = 12f;
+
+    private LayerMask losMask;
+    private float distanceToPlayer;
+    private Vector3 lastPlayerPosition;
+    private float lastDestinationCalculation;
+
     private float idleTimer;
     private EnemyState currentState;
+
+    private void OnValidate()
+    {
+        chaseRange = Mathf.Round(chaseRange);
+    }
 
     private void Awake()
     {
@@ -52,6 +65,8 @@ public class EnemyAI : MonoBehaviour
 
         attackRange = player.GetComponent<NavMeshAgent>().radius + agent.radius + 0.5f;
 
+        losMask = ~LayerMask.GetMask("Player", "Enemy");
+
         currentState = EnemyState.Idle;
         Idle();
         idleTimer = 0f;
@@ -67,20 +82,40 @@ public class EnemyAI : MonoBehaviour
         }
     }
 
-    void Update()
+    private bool CheckLineOfSight(Transform target)
     {
-        currentState = EnemyState.Idle;
+        Vector3 myPos = transform.position + Vector3.up;
 
-        float distanceToPlayer = Vector3.Distance(transform.position, player.position);
+        Vector3 targetPos = new Vector3(target.position.x, myPos.y, target.position.z);
 
-        if (distanceToPlayer <= chaseRange)
+        float rayDistance = Vector3.Distance(myPos, targetPos);
+        Vector3 direction = (targetPos - myPos).normalized;
+
+        if (Physics.Raycast(myPos, direction, out RaycastHit hit, rayDistance, losMask))
         {
-            idleCounter = 0f;
-            currentState = EnemyState.Chase;
+
+            Debug.DrawRay(myPos, direction * hit.distance, Color.red);
+            return false;
         }
         else
         {
 
+            Debug.DrawRay(myPos, direction * rayDistance, Color.green);
+            return true;
+        }
+    }
+
+    void Update()
+    {
+        distanceToPlayer = Vector3.Distance(transform.position, player.position);
+
+        if (distanceToPlayer <= chaseRange && CheckLineOfSight(player))
+        {
+            currentState = EnemyState.Chase;
+        }
+        else
+        {
+            currentState = EnemyState.Idle;
         }
 
         switch (currentState)
@@ -156,8 +191,24 @@ public class EnemyAI : MonoBehaviour
 
     }
 
-    void Chase()
+    private void Chase()
     {
+        idleCounter = idleTimeOut;
 
+        if (CheckLineOfSight(player))
+        {
+
+            float timeSinceLastCalc = Time.time - lastDestinationCalculation;
+            float distanceMovedByPlayer = Vector3.Distance(player.position, lastPlayerPosition);
+
+            if (distanceMovedByPlayer > 0.5f || timeSinceLastCalc > 0.5f)
+            {
+                agent.stoppingDistance = attackRange;
+                agent.SetDestination(player.position);
+
+                lastPlayerPosition = player.position;
+                lastDestinationCalculation = Time.time;
+            }
+        }
     }
 }

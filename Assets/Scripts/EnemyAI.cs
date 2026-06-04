@@ -12,6 +12,9 @@ public class EnemyAI : MonoBehaviour
         Attack
     }
 
+    private NavMeshObstacle obstacle;
+    private bool isWaitingToEnableAgent;
+
     [SerializeField] private float attackRange = 2f;
     [SerializeField] private float idleToPatrolTime = 3f;
 
@@ -51,6 +54,7 @@ public class EnemyAI : MonoBehaviour
     {
         agent = GetComponent<NavMeshAgent>();
         anim = GetComponent<Animator>();
+        obstacle = GetComponent<NavMeshObstacle>();
 
         startPosition = transform.position;
 
@@ -108,6 +112,29 @@ public class EnemyAI : MonoBehaviour
 
             Debug.DrawRay(myPos, direction * rayDistance, Color.green);
             return true;
+        }
+    }
+
+    private void ToggleAgent(bool isOn)
+    {
+        if (isOn)
+        {
+            if (!agent.isActiveAndEnabled)
+            {
+                obstacle.enabled = false;
+                isWaitingToEnableAgent = true;
+            }
+            else if (isWaitingToEnableAgent)
+            {
+                agent.enabled = true;
+                isWaitingToEnableAgent = false;
+            }
+        }
+        else
+        {
+            agent.enabled = false;
+            obstacle.enabled = true;
+            isWaitingToEnableAgent = false;
         }
     }
 
@@ -192,27 +219,46 @@ public class EnemyAI : MonoBehaviour
 
     private void Idle()
     {
+        ToggleAgent(false);
 
         idleCounter -= Time.deltaTime;
 
         if (idleCounter <= 0f)
         {
-
             idleCounter = 0f;
 
             idleTimeOut = Random.Range(idleDelay.x, idleDelay.y);
             idleCounter = idleTimeOut;
 
             patrolPosition = startPosition + Random.insideUnitSphere * patrolRadius;
-
             patrolPosition.y = startPosition.y;
 
-            currentState = EnemyState.Patrol;
+            NavMeshHit hit;
+            if (NavMesh.SamplePosition(transform.position, out hit, 1f, NavMesh.AllAreas))
+            {
+                Vector3 validStart = hit.position;
+                NavMeshPath path = new NavMeshPath();
+
+                if (NavMesh.CalculatePath(validStart, patrolPosition, NavMesh.AllAreas, path) &&
+                    path.status == NavMeshPathStatus.PathComplete)
+                {
+                    currentState = EnemyState.Patrol;
+                }
+                else
+                {
+                    patrolPosition = startPosition + Random.insideUnitSphere * patrolRadius;
+                    patrolPosition.y = startPosition.y;
+                }
+            }
         }
     }
 
     private void Patrol()
     {
+        ToggleAgent(true);
+
+        if (!agent.isActiveAndEnabled || !agent.isOnNavMesh)
+            return;
 
         agent.stoppingDistance = 0f;
 
@@ -242,11 +288,17 @@ public class EnemyAI : MonoBehaviour
 
     void Attack()
     {
+        ToggleAgent(false);
 
     }
 
     private void Chase()
     {
+        ToggleAgent(true);
+
+        if (!agent.isActiveAndEnabled || !agent.isOnNavMesh)
+            return;
+
         idleCounter = idleTimeOut;
 
         if (distanceToPlayer <= chaseRange && CheckLineOfSight(player))

@@ -9,8 +9,15 @@ public class EnemyAI : MonoBehaviour
         Idle,
         Patrol,
         Chase,
-        Attack
+        Attack,
+        Standby
     }
+
+    [Header("Standby Settings")]
+    [SerializeField, Range(3f, 12f)]
+    private float standbyRange = 8f;
+
+    private Vector3 standbyPos;
 
     private NavMeshObstacle obstacle;
     private bool isWaitingToEnableAgent;
@@ -96,6 +103,23 @@ public class EnemyAI : MonoBehaviour
         }
     }
 
+    private Vector3 SetStandbyPosition()
+    {
+        Vector3 basePos = player.position;
+
+        Vector3 myPosition = basePos + Random.insideUnitSphere * standbyRange;
+
+        int attempts = 0;
+
+        while (attempts < 25 && Vector3.Distance(myPosition, player.position) < attackRange)
+        {
+            myPosition = basePos + Random.insideUnitSphere * standbyRange;
+            attempts++;
+        }
+
+        return (attempts < 25) ? myPosition : standbyPos;
+    }
+
     private void FacePlayer()
     {
         ToggleAgent(false);
@@ -167,12 +191,19 @@ public class EnemyAI : MonoBehaviour
                 }
                 else
                 {
-                    currentState = EnemyState.Chase;
+                    currentState = EnemyState.Standby;
                 }
             }
             else
             {
-                currentState = EnemyState.Chase;
+                if (isAttackPriority)
+                {
+                    currentState = EnemyState.Chase;
+                }
+                else
+                {
+                    currentState = EnemyState.Standby;
+                }
             }
         }
         else if (crumb != null)
@@ -197,6 +228,9 @@ public class EnemyAI : MonoBehaviour
                 break;
             case EnemyState.Attack:
                 Attack();
+                break;
+            case EnemyState.Standby:
+                Standby();
                 break;
         }
     }
@@ -247,6 +281,9 @@ public class EnemyAI : MonoBehaviour
 
         if (idleCounter <= 0f)
         {
+
+            standbyPos = SetStandbyPosition();
+
             idleCounter = 0f;
 
             idleTimeOut = Random.Range(idleDelay.x, idleDelay.y);
@@ -315,6 +352,28 @@ public class EnemyAI : MonoBehaviour
 
     }
 
+    private void Standby()
+    {
+        ToggleAgent(true);
+
+        if (isWaitingToEnableAgent)
+            return;
+
+        if (agent.destination != standbyPos)
+        {
+            agent.stoppingDistance = 0f;
+            agent.SetDestination(standbyPos);
+            standbyPos = agent.destination;
+        }
+
+        bool isStandbyIdle = (distanceToPlayer <= chaseRange) || (crumb != null);
+
+        if (isStandbyIdle)
+        {
+            FacePlayer();
+        }
+    }
+
     private void Chase()
     {
         ToggleAgent(true);
@@ -323,6 +382,8 @@ public class EnemyAI : MonoBehaviour
             return;
 
         idleCounter = idleTimeOut;
+
+        standbyPos = SetStandbyPosition();
 
         if (distanceToPlayer <= chaseRange && CheckLineOfSight(player))
         {

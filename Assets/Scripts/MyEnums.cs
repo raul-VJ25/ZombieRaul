@@ -5,5 +5,6 @@ public enum EnemyState
     Idle,
     Patrol,
     Attack,
-    Chase
+    Chase,
+    Standby
 }

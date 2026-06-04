@@ -35,15 +35,19 @@ public class EnemyAI : MonoBehaviour
 
     [Header("Chase Settings")]
     [SerializeField, Range(5f, 25f)]
-    private float chaseRange = 12f;
+    public float chaseRange = 12f;
 
     private LayerMask losMask;
-    private float distanceToPlayer;
     private Vector3 lastPlayerPosition;
     private float lastDestinationCalculation;
 
     private float idleTimer;
-    private EnemyState currentState;
+
+    [HideInInspector] public float distanceToPlayer;
+    [HideInInspector] public EnemyState currentState;
+
+    [HideInInspector] public bool isAttackPriority;
+    [SerializeField] private float rotationSpeed = 2f;
 
     private void OnValidate()
     {
@@ -90,6 +94,17 @@ public class EnemyAI : MonoBehaviour
         {
             Debug.LogWarning("Los rangos y tiempos deberían ser mayores que 0.");
         }
+    }
+
+    private void FacePlayer()
+    {
+        ToggleAgent(false);
+
+        Vector3 lookDirection = player.position - transform.position;
+
+        Quaternion lookRot = Quaternion.LookRotation(lookDirection);
+
+        transform.rotation = Quaternion.Lerp(transform.rotation, lookRot, Time.deltaTime * rotationSpeed);
     }
 
     private bool CheckLineOfSight(Transform target)
@@ -140,18 +155,25 @@ public class EnemyAI : MonoBehaviour
 
     void Update()
     {
-
         distanceToPlayer = Vector3.Distance(transform.position, player.position);
-
-        if (distanceToPlayer > chaseRange)
-        {
-            crumb = GetBreadcrumb();
-        }
 
         if (distanceToPlayer <= chaseRange && CheckLineOfSight(player))
         {
-            currentState = EnemyState.Chase;
-            crumb = null;
+            if (distanceToPlayer <= attackRange)
+            {
+                if (isAttackPriority)
+                {
+                    currentState = EnemyState.Attack;
+                }
+                else
+                {
+                    currentState = EnemyState.Chase;
+                }
+            }
+            else
+            {
+                currentState = EnemyState.Chase;
+            }
         }
         else if (crumb != null)
         {
@@ -289,6 +311,7 @@ public class EnemyAI : MonoBehaviour
     void Attack()
     {
         ToggleAgent(false);
+        FacePlayer();
 
     }
 

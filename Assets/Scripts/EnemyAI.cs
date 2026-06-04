@@ -19,6 +19,8 @@ public class EnemyAI : MonoBehaviour
     private NavMeshObstacle obstacle;
     private bool isWaitingToEnableAgent;
 
+    public int priorityBonus = 0;
+
     [SerializeField] private float attackRange = 2f;
     [SerializeField] private float idleToPatrolTime = 3f;
 

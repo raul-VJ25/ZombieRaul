@@ -50,12 +50,14 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Assets\Scripts\Breadcrumb.cs" />
+    <Compile Include="Assets\Scripts\Combat.cs" />
     <Compile Include="Assets\Scripts\EnemyAI.cs" />
     <Compile Include="Assets\Scripts\MyEnums.cs" />
     <Compile Include="Assets\Scripts\BreadcrumbGenerator.cs" />
     <Compile Include="Assets\Scripts\LookAt.cs" />
     <Compile Include="Assets\Scripts\ClickToMove.cs" />
     <Compile Include="Assets\Scripts\PriorityManager.cs" />
+    <Compile Include="Assets\Scripts\Health.cs" />
     <Compile Include="Assets\Scripts\ClickTarget.cs" />
     <Compile Include="Assets\Scripts\LocomotionSimpleAgent.cs" />
   </ItemGroup>

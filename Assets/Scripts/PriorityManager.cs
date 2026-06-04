@@ -8,8 +8,12 @@ public class PriorityManager : MonoBehaviour
     private List<EnemyAI> enemyList = new List<EnemyAI>();
     private List<EnemyAI> priorityList = new List<EnemyAI>();
 
+    private Transform player;
+
     private void Awake()
     {
+        player = GameObject.FindWithTag("Player").transform;
+
         EnemyAI[] enemies = FindObjectsOfType<EnemyAI>();
         foreach (EnemyAI enemy in enemies)
         {
@@ -31,7 +35,12 @@ public class PriorityManager : MonoBehaviour
             }
         }
 
-        priorityList.Sort((a, b) => a.distanceToPlayer.CompareTo(b.distanceToPlayer));
+        priorityList.Sort((a, b) =>
+        {
+            float distA = Vector3.Distance(a.transform.position, player.position) - a.priorityBonus;
+            float distB = Vector3.Distance(b.transform.position, player.position) - b.priorityBonus;
+            return distA.CompareTo(distB);
+        });
 
         for (int i = 0; i < priorityList.Count; i++)
         {

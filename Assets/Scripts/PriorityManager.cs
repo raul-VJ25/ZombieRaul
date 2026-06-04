@@ -50,4 +50,12 @@ public class PriorityManager : MonoBehaviour
             }
         }
     }
+
+    public void RemoveEnemyFromList(EnemyAI enemy)
+    {
+        if (enemyList.Contains(enemy))
+        {
+            enemyList.Remove(enemy);
+        }
+    }
 }

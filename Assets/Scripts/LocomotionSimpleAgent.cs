@@ -11,17 +11,27 @@ public class LocomotionSimpleAgent : MonoBehaviour
     Vector2 smoothDeltaPosition = Vector2.zero;
     Vector2 velocity = Vector2.zero;
 
+    private bool isEnemy;
+    private EnemyAI enemyAI;
+    private Transform player;
     void Awake()
     {
         anim = GetComponent<Animator>();
         agent = GetComponent<NavMeshAgent>();
         lookAt = GetComponent<LookAt>();
         agent.updatePosition = false;
+
+        isEnemy = gameObject.CompareTag("Enemy");
+
+        if (isEnemy)
+        {
+            enemyAI = GetComponent<EnemyAI>();
+            player = GameObject.FindWithTag("Player").transform;
+        }
     }
 
     void Update()
     {
-        // PROTECCIÓN: Solo calculamos movimiento si el NavMeshAgent está activo
         if (agent.isActiveAndEnabled)
         {
             Vector3 worldDeltaPosition = agent.nextPosition - transform.position;
@@ -47,16 +57,22 @@ public class LocomotionSimpleAgent : MonoBehaviour
         }
         else
         {
-            // Si el agente está desactivado (Idle/Attack), forzamos a que la animación sea de quieto
             anim.SetBool("move", false);
             velocity = Vector2.zero;
             smoothDeltaPosition = Vector2.zero;
+        }
+
+        if (isEnemy)
+        {
+            anim.SetBool("Attack", enemyAI.currentState == EnemyState.Attack);
+
+            bool isStandBy = (enemyAI.distanceToPlayer <= enemyAI.chaseRange) && (enemyAI.currentState == EnemyState.Idle);
+            anim.SetBool("StandBy", isStandBy);
         }
     }
 
     void OnAnimatorMove()
     {
-        // PROTECCIÓN: Solo movemos el personaje si el agente está activo
         if (agent.isActiveAndEnabled)
         {
             Vector3 position = anim.rootPosition;

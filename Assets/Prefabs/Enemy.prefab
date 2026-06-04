@@ -1101,7 +1101,7 @@ GameObject:
   - component: {fileID: -3298338369381388700}
   m_Layer: 0
   m_Name: Enemy
-  m_TagString: Untagged
+  m_TagString: Enemy
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -1208,6 +1208,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 50afc6587f485bf4d9589c691e2e8fc0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EnemyAI
+  meleeRange: 0.5
+  standbyRange: 8
   attackRange: 2
   idleToPatrolTime: 3
   breadcrumbMask:
@@ -1216,6 +1218,10 @@ MonoBehaviour:
   patrolRadius: 5
   idleDelay: {x: 3, y: 8}
   chaseRange: 8
+  distanceToPlayer: 0
+  currentState: 0
+  isAttackPriority: 0
+  rotationSpeed: 2
 --- !u!208 &-3298338369381388700
 NavMeshObstacle:
   m_ObjectHideFlags: 0

@@ -4,14 +4,11 @@ using UnityEngine.AI;
 
 public class EnemyAI : MonoBehaviour
 {
-    public enum EnemyState
-    {
-        Idle,
-        Patrol,
-        Chase,
-        Attack,
-        Standby
-    }
+
+    [Header("Combat Settings")]
+    [SerializeField]
+    [Range(0, 2f)]
+    public float meleeRange = 0.5f;
 
     [Header("Standby Settings")]
     [SerializeField, Range(3f, 12f)]
@@ -82,7 +79,7 @@ public class EnemyAI : MonoBehaviour
             return;
         }
 
-        attackRange = player.GetComponent<NavMeshAgent>().radius + agent.radius + 0.5f;
+        attackRange = player.GetComponent<NavMeshAgent>().radius + agent.radius + meleeRange;
 
         losMask = ~LayerMask.GetMask("Player", "Enemy", "Breadcrumb");
 

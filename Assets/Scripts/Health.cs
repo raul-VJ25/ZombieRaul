@@ -35,8 +35,8 @@ public class Health : MonoBehaviour
         if (anim != null)
         {
             anim.SetBool("move", false);
-            anim.SetBool("attack", false);
-            anim.SetBool("standby", false);
+            anim.SetBool("Attack", false);
+            anim.SetBool("StandBy", false);
         }
 
         NavMeshAgent agent = GetComponent<NavMeshAgent>();

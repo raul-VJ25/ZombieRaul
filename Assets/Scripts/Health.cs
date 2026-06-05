@@ -37,6 +37,9 @@ public class Health : MonoBehaviour
             anim.SetBool("move", false);
             anim.SetBool("Attack", false);
             anim.SetBool("StandBy", false);
+
+            anim.SetInteger("DeathID", Random.Range(1, 13));
+            anim.SetTrigger("Death");
         }
 
         NavMeshAgent agent = GetComponent<NavMeshAgent>();
@@ -71,7 +74,28 @@ public class Health : MonoBehaviour
             }
         }
 
-        yield return new WaitForSeconds(3f);
+        if (anim != null)
+        {
+            AnimatorStateInfo stateInfo = anim.GetCurrentAnimatorStateInfo(0);
+            float elapsed = 0f;
+
+            while (stateInfo.tagHash != Animator.StringToHash("death") && elapsed < 5f)
+            {
+                elapsed += Time.deltaTime;
+                stateInfo = anim.GetCurrentAnimatorStateInfo(0);
+                yield return null;
+            }
+
+            if (stateInfo.tagHash == Animator.StringToHash("death"))
+            {
+                float remainingTime = stateInfo.length - stateInfo.normalizedTime;
+                yield return new WaitForSeconds(remainingTime + 1f);
+            }
+        }
+        else
+        {
+            yield return new WaitForSeconds(3f);
+        }
 
         Rigidbody rb = gameObject.AddComponent<Rigidbody>();
         rb.useGravity = true;

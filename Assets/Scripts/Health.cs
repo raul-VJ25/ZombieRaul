@@ -7,6 +7,8 @@ public class Health : MonoBehaviour
 
     [SerializeField] private GameObject bloodPrefab;
 
+    [SerializeField] private GameObject feedbackTextPrefab;
+
     [SerializeField] private float health;
     [SerializeField] private float healthMax = 100f;
     [HideInInspector] public bool isDead;
@@ -23,6 +25,18 @@ public class Health : MonoBehaviour
     public void ChangeHealth(float amount)
     {
         health = Mathf.Clamp(health + amount, 0f, healthMax);
+
+        if (amount != 0 && feedbackTextPrefab != null)
+        {
+            Vector3 spawnPos = transform.position + Vector3.up * 2f;
+            GameObject feedbackGO = Instantiate(feedbackTextPrefab, spawnPos, Quaternion.identity);
+
+            FeedbackText feedback = feedbackGO.GetComponent<FeedbackText>();
+            if (feedback != null)
+            {
+                feedback.ChangeText(amount);
+            }
+        }
 
         if (amount < 0 && bloodPrefab != null)
         {

@@ -904,6 +904,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Health
   bloodPrefab: {fileID: 8382953279938748300, guid: 499cfc0c29ef1f34187a5e89182d1c66, type: 3}
+  feedbackTextPrefab: {fileID: 4357616663747983014, guid: caf1789d9d818a240b5cacd050650d20, type: 3}
   health: 0
   healthMax: 100
   isDead: 0

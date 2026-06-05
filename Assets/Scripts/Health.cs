@@ -1,6 +1,8 @@
 using UnityEngine;
 using UnityEngine.AI;
 using System.Collections;
+using UnityEngine.UI;
+using TMPro;
 
 public class Health : MonoBehaviour
 {
@@ -14,6 +16,9 @@ public class Health : MonoBehaviour
 
     private LayerMask opponentMask;
 
+    private Image healthBarFill;
+    private TextMeshProUGUI healthText;
+
     [SerializeField] private float health;
     [SerializeField] private float healthMax = 100f;
     [HideInInspector] public bool isDead;
@@ -24,17 +29,21 @@ public class Health : MonoBehaviour
     {
         health = healthMax;
         anim = GetComponent<Animator>();
-
         isPlayer = gameObject.CompareTag("Player");
 
         if (isPlayer)
         {
             opponentMask = LayerMask.GetMask("Enemy");
+
+            healthBarFill = GameObject.Find("PlayerHealthBarFill").GetComponent<Image>();
+            healthText = GameObject.Find("PlayerHealthText").GetComponent<TextMeshProUGUI>();
         }
         else
         {
             opponentMask = LayerMask.GetMask("Player");
         }
+
+        ChangeHealth(0);
 
         InvokeRepeating(nameof(Regeneration), 1f, 1f);
     }
@@ -53,15 +62,16 @@ public class Health : MonoBehaviour
     {
         health = Mathf.Clamp(health + amount, 0f, healthMax);
 
-        if (amount != 0 && feedbackTextPrefab != null)
+        if (isPlayer)
         {
-            Vector3 spawnPos = transform.position + Vector3.up * 2f;
-            GameObject feedbackGO = Instantiate(feedbackTextPrefab, spawnPos, Quaternion.identity);
-
-            FeedbackText feedback = feedbackGO.GetComponent<FeedbackText>();
-            if (feedback != null)
+            if (healthBarFill != null)
             {
-                feedback.ChangeText(amount);
+                healthBarFill.fillAmount = Tools.MapValues(health, 0, healthMax, 0, 1);
+            }
+
+            if (healthText != null)
+            {
+                healthText.text = Mathf.Round(health) + "/" + healthMax;
             }
         }
 
@@ -69,8 +79,15 @@ public class Health : MonoBehaviour
         {
             Vector3 spawnPos = transform.position + Vector3.up * 0.05f;
             Quaternion spawnRot = Quaternion.Euler(-90f, Random.Range(0f, 360f), 0f);
-
             Instantiate(bloodPrefab, spawnPos, spawnRot);
+        }
+
+        if (amount != 0 && feedbackTextPrefab != null)
+        {
+            Vector3 spawnPos = transform.position + Vector3.up * 2f;
+            GameObject feedbackGO = Instantiate(feedbackTextPrefab, spawnPos, Quaternion.identity);
+            FeedbackText feedback = feedbackGO.GetComponent<FeedbackText>();
+            if (feedback != null) feedback.ChangeText(amount);
         }
 
         if (health <= 0f && !isDead)

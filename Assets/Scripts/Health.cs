@@ -9,6 +9,11 @@ public class Health : MonoBehaviour
 
     [SerializeField] private GameObject feedbackTextPrefab;
 
+    [SerializeField] private float regionPerSecond = 1f;
+    [SerializeField] private float regionDistance = 8f;
+
+    private LayerMask opponentMask;
+
     [SerializeField] private float health;
     [SerializeField] private float healthMax = 100f;
     [HideInInspector] public bool isDead;
@@ -19,7 +24,29 @@ public class Health : MonoBehaviour
     {
         health = healthMax;
         anim = GetComponent<Animator>();
+
         isPlayer = gameObject.CompareTag("Player");
+
+        if (isPlayer)
+        {
+            opponentMask = LayerMask.GetMask("Enemy");
+        }
+        else
+        {
+            opponentMask = LayerMask.GetMask("Player");
+        }
+
+        InvokeRepeating(nameof(Regeneration), 1f, 1f);
+    }
+
+    private void Regeneration()
+    {
+        Collider[] hits = Physics.OverlapSphere(transform.position, regionDistance, opponentMask);
+
+        if (hits.Length == 0 && health < healthMax)
+        {
+            ChangeHealth(regionPerSecond);
+        }
     }
 
     public void ChangeHealth(float amount)

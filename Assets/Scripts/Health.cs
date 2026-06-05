@@ -19,13 +19,15 @@ public class Health : MonoBehaviour
     private Image healthBarFill;
     private TextMeshProUGUI healthText;
 
+    private Image enemyHealthBarFill;
+
     [SerializeField] private float health;
     [SerializeField] private float healthMax = 100f;
     [HideInInspector] public bool isDead;
     private bool isPlayer;
     private Animator anim;
 
-    private void Awake()
+    void Awake()
     {
         health = healthMax;
         anim = GetComponent<Animator>();
@@ -34,17 +36,25 @@ public class Health : MonoBehaviour
         if (isPlayer)
         {
             opponentMask = LayerMask.GetMask("Enemy");
-
             healthBarFill = GameObject.Find("PlayerHealthBarFill").GetComponent<Image>();
             healthText = GameObject.Find("PlayerHealthText").GetComponent<TextMeshProUGUI>();
         }
         else
         {
             opponentMask = LayerMask.GetMask("Player");
+
+            Transform barTransform = transform.Find("Enemy Health Bar");
+            if (barTransform != null)
+            {
+                Transform fillTransform = barTransform.Find("Image Fill");
+                if (fillTransform != null)
+                {
+                    enemyHealthBarFill = fillTransform.GetComponent<Image>();
+                }
+            }
         }
 
         ChangeHealth(0);
-
         InvokeRepeating(nameof(Regeneration), 1f, 1f);
     }
 
@@ -62,17 +72,19 @@ public class Health : MonoBehaviour
     {
         health = Mathf.Clamp(health + amount, 0f, healthMax);
 
-        if (isPlayer)
+        if (healthBarFill != null)
         {
-            if (healthBarFill != null)
-            {
-                healthBarFill.fillAmount = Tools.MapValues(health, 0, healthMax, 0, 1);
-            }
+            healthBarFill.fillAmount = Tools.MapValues(health, 0, healthMax, 0, 1);
 
-            if (healthText != null)
+            if (!isPlayer)
             {
-                healthText.text = Mathf.Round(health) + "/" + healthMax;
+                healthBarFill.gameObject.SetActive(health > 0f && health < healthMax);
             }
+        }
+
+        if (isPlayer && healthText != null)
+        {
+            healthText.text = Mathf.Round(health) + "/" + healthMax;
         }
 
         if (amount < 0 && bloodPrefab != null)

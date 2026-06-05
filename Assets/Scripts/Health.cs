@@ -5,6 +5,8 @@ using System.Collections;
 public class Health : MonoBehaviour
 {
 
+    [SerializeField] private GameObject bloodPrefab;
+
     [SerializeField] private float health;
     [SerializeField] private float healthMax = 100f;
     [HideInInspector] public bool isDead;
@@ -21,6 +23,14 @@ public class Health : MonoBehaviour
     public void ChangeHealth(float amount)
     {
         health = Mathf.Clamp(health + amount, 0f, healthMax);
+
+        if (amount < 0 && bloodPrefab != null)
+        {
+            Vector3 spawnPos = transform.position + Vector3.up * 0.05f;
+            Quaternion spawnRot = Quaternion.Euler(-90f, Random.Range(0f, 360f), 0f);
+
+            Instantiate(bloodPrefab, spawnPos, spawnRot);
+        }
 
         if (health <= 0f && !isDead)
         {

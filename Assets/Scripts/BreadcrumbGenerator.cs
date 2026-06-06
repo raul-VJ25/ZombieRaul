@@ -14,10 +14,10 @@ public class BreadcrumbGenerator : MonoBehaviour
     {
         agent = GetComponent<NavMeshAgent>();
 
-        GameObject container = GameObject.Find("Temp Container");
+        GameObject container = GameObject.Find("TempContainer");
         if (container == null)
         {
-            container = new GameObject("Temp Container");
+            container = new GameObject("TempContainer");
         }
         tempContainer = container.transform;
 

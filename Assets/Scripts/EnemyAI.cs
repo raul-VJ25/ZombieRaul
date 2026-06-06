@@ -157,15 +157,15 @@ public class EnemyAI : MonoBehaviour
     {
         if (isOn)
         {
-            if (!agent.isActiveAndEnabled)
-            {
-                obstacle.enabled = false;
-                isWaitingToEnableAgent = true;
-            }
-            else if (isWaitingToEnableAgent)
+            if (isWaitingToEnableAgent)
             {
                 agent.enabled = true;
                 isWaitingToEnableAgent = false;
+            }
+            else if (!agent.isActiveAndEnabled)
+            {
+                obstacle.enabled = false;
+                isWaitingToEnableAgent = true;
             }
         }
         else
@@ -179,6 +179,7 @@ public class EnemyAI : MonoBehaviour
     void Update()
     {
         distanceToPlayer = Vector3.Distance(transform.position, player.position);
+        crumb = GetBreadcrumb();
 
         if (distanceToPlayer <= chaseRange && CheckLineOfSight(player))
         {

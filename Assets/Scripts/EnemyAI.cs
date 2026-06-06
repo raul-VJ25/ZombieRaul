@@ -47,8 +47,6 @@ public class EnemyAI : MonoBehaviour
     private Vector3 lastPlayerPosition;
     private float lastDestinationCalculation;
 
-    private float idleTimer;
-
     [HideInInspector] public float distanceToPlayer;
     [HideInInspector] public EnemyState currentState;
 
@@ -89,7 +87,6 @@ public class EnemyAI : MonoBehaviour
 
         currentState = EnemyState.Idle;
         Idle();
-        idleTimer = 0f;
 
         if (attackRange >= chaseRange)
         {

@@ -12,6 +12,7 @@ public class FeedbackText : MonoBehaviour
     private void Awake()
     {
         myText = transform.Find("Text").GetComponent<TextMeshPro>();
+        Destroy(gameObject, lifespan);
     }
 
     private void Update()

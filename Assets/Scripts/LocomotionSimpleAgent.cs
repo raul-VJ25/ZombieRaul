@@ -66,7 +66,7 @@ public class LocomotionSimpleAgent : MonoBehaviour
         {
             anim.SetBool("Attack", enemyAI.currentState == EnemyState.Attack);
 
-            bool isStandBy = (enemyAI.distanceToPlayer <= enemyAI.chaseRange) && (enemyAI.currentState == EnemyState.Idle);
+            bool isStandBy = (enemyAI.distanceToPlayer <= enemyAI.chaseRange && enemyAI.currentState == EnemyState.Idle) || enemyAI.currentState == EnemyState.Standby;
             anim.SetBool("StandBy", isStandBy);
         }
     }

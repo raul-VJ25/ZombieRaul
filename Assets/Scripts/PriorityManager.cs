@@ -14,7 +14,7 @@ public class PriorityManager : MonoBehaviour
     {
         player = GameObject.FindWithTag("Player").transform;
 
-        EnemyAI[] enemies = FindObjectsOfType<EnemyAI>();
+        EnemyAI[] enemies = FindObjectsByType<EnemyAI>(FindObjectsSortMode.None);
         foreach (EnemyAI enemy in enemies)
         {
             enemyList.Add(enemy);

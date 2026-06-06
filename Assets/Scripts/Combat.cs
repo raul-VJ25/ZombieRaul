@@ -60,8 +60,13 @@ public class Combat : MonoBehaviour
     public void ImpactEvent()
     {
         Vector3 offset = transform.forward * 0.5f + Vector3.up;
+        Vector3 attackCenter = transform.position + offset;
 
-        Collider[] hits = Physics.OverlapSphere(transform.position + offset, attackRadius, opponentMask);
+        Vector3 wallCheckOrigin = transform.position + Vector3.up * 0.9f;
+
+        LayerMask obstacleMask = ~(opponentMask | (1 << gameObject.layer));
+
+        Collider[] hits = Physics.OverlapSphere(attackCenter, attackRadius, opponentMask);
 
         if (hits.Length > 0)
         {
@@ -69,6 +74,19 @@ public class Combat : MonoBehaviour
 
             foreach (Collider hit in hits)
             {
+                Vector3 targetPos = hit.transform.position + Vector3.up * 0.9f;
+
+                if (Physics.Linecast(wallCheckOrigin, targetPos, out RaycastHit wallHit, obstacleMask))
+                {
+                    if (wallHit.transform != hit.transform)
+                    {
+                        Debug.DrawLine(wallCheckOrigin, targetPos, Color.red);
+                        continue;
+                    }
+                }
+
+                Debug.DrawLine(wallCheckOrigin, targetPos, Color.green);
+
                 Health health = hit.GetComponent<Health>();
                 if (health != null)
                 {

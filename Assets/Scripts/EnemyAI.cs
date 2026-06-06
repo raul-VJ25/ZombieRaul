@@ -121,8 +121,6 @@ public class EnemyAI : MonoBehaviour
 
     private void FacePlayer()
     {
-        ToggleAgent(false);
-
         Vector3 lookDirection = player.position - transform.position;
 
         Quaternion lookRot = Quaternion.LookRotation(lookDirection);

@@ -90,7 +90,7 @@ public class Health : MonoBehaviour
         if (amount < 0 && bloodPrefab != null)
         {
             Vector3 spawnPos = transform.position + Vector3.up * 0.05f;
-            Quaternion spawnRot = Quaternion.Euler(-90f, Random.Range(0f, 360f), 0f);
+            Quaternion spawnRot = Quaternion.Euler(0f, Random.Range(0f, 360f), 0f);
             Instantiate(bloodPrefab, spawnPos, spawnRot);
         }
 

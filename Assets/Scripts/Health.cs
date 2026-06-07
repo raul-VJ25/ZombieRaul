@@ -49,7 +49,7 @@ public class Health : MonoBehaviour
                 Transform fillTransform = barTransform.Find("Image Fill");
                 if (fillTransform != null)
                 {
-                    enemyHealthBarFill = fillTransform.GetComponent<Image>();
+                    healthBarFill = fillTransform.GetComponent<Image>();
                 }
             }
         }
@@ -74,11 +74,14 @@ public class Health : MonoBehaviour
 
         if (healthBarFill != null)
         {
-            healthBarFill.fillAmount = Tools.MapValues(health, 0, healthMax, 0, 1);
+            healthBarFill.fillAmount = health / healthMax;
 
             if (!isPlayer)
             {
-                healthBarFill.gameObject.SetActive(health > 0f && health < healthMax);
+                GameObject barContainer = healthBarFill.transform.parent.gameObject;
+
+                bool shouldShowBar = (health > 0f && health < healthMax);
+                barContainer.SetActive(shouldShowBar);
             }
         }
 

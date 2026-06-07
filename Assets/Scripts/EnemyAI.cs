@@ -354,6 +354,8 @@ public class EnemyAI : MonoBehaviour
         if (isWaitingToEnableAgent)
             return;
 
+        if (!agent.isActiveAndEnabled || !agent.isOnNavMesh) return;
+
         if (agent.destination != standbyPos)
         {
             agent.stoppingDistance = 0f;

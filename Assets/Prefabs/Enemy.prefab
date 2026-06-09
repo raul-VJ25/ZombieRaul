@@ -1275,7 +1275,7 @@ MonoBehaviour:
   regionPerSecond: 1
   regionDistance: 8
   health: 0
-  healthMax: 100
+  healthMax: 25
   isDead: 0
 --- !u!136 &4385032038082844458
 CapsuleCollider:
